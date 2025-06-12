@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/productos")
+@RequestMapping("/api/productos") //quedaria como "localhost:8080/api/productos"
 public class ProductoController {
 
     @Autowired
@@ -30,7 +30,7 @@ public class ProductoController {
     }
 
     // Obtener un producto por ID
-    @GetMapping("/{id}")
+    @GetMapping("/{id}") //quedaria como "localhost:8080/api/productos/1" donde uno es el id
     public ResponseEntity<Producto> getProductoById(@PathVariable Integer id) {
         return productoService.findById(id)
                 .map(ResponseEntity::ok)
