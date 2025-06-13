@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/clientes") //quedaria como "localhost:8080/api/clientes"
+@RequestMapping("/api/clientes")
 public class ClienteController {
 
     @Autowired
@@ -23,7 +23,7 @@ public class ClienteController {
     }
 
     // Obtener un cliente por ID
-    @GetMapping("/{id}") //quedaria como "localhost:8080/api/clientes/1" donde uno es el id
+    @GetMapping("/{id}")
     public ResponseEntity<Cliente> getClienteById(@PathVariable Integer id) {
         return clienteService.findById(id)
                 .map(ResponseEntity::ok)
