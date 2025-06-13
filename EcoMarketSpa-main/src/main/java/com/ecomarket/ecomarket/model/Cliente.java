@@ -45,3 +45,4 @@ public class Cliente {
         this.fechaRegistro = Date.valueOf(LocalDate.now());
     }
 }
+
