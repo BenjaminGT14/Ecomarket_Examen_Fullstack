@@ -45,4 +45,3 @@ public class ClienteService {
             .orElseThrow(() -> new RuntimeException("Cliente no encontrado con id: " + id));
     }
 }
-
