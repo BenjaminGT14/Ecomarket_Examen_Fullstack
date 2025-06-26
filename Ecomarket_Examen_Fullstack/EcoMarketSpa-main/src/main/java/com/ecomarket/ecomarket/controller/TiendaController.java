@@ -1,10 +1,13 @@
 package com.ecomarket.ecomarket.controller;
 
+import com.ecomarket.ecomarket.assembler.TiendaAssembler;
+import com.ecomarket.ecomarket.assembler.TiendaAssembler.TiendaModel;
 import com.ecomarket.ecomarket.model.Tienda;
 import com.ecomarket.ecomarket.service.TiendaService;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,28 +19,36 @@ public class TiendaController {
     @Autowired
     private TiendaService tiendaService;
 
+    @Autowired
+    private TiendaAssembler tiendaAssembler;
+
     @GetMapping
-    public List<Tienda> getAllTiendas() {
-        return tiendaService.findAll();
+    public List<TiendaModel> getAllTiendas() {
+        List<Tienda> tiendas = tiendaService.findAll();
+        return tiendaAssembler.toModelList(tiendas);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Tienda> getTiendaById(@PathVariable Integer id) {
+    public ResponseEntity<TiendaModel> getTiendaById(@PathVariable Integer id) {
         return tiendaService.findById(id)
+                .map(tiendaAssembler::toModel)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<Tienda> createTienda(@RequestBody Tienda tienda) {
+    public ResponseEntity<TiendaModel> createTienda(@RequestBody Tienda tienda) {
         Tienda nueva = tiendaService.save(tienda);
-        return ResponseEntity.status(HttpStatus.CREATED).body(nueva);
+        TiendaModel model = tiendaAssembler.toModel(nueva);
+        return ResponseEntity.status(HttpStatus.CREATED).body(model);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Tienda> updateTienda(@PathVariable Integer id, @RequestBody Tienda tienda) {
+    public ResponseEntity<TiendaModel> updateTienda(@PathVariable Integer id, @RequestBody Tienda tienda) {
         try {
-            return ResponseEntity.ok(tiendaService.update(id, tienda));
+            Tienda tiendaActualizada = tiendaService.update(id, tienda);
+            TiendaModel model = tiendaAssembler.toModel(tiendaActualizada);
+            return ResponseEntity.ok(model);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }

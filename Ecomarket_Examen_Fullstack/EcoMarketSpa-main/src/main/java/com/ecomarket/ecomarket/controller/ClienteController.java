@@ -1,7 +1,10 @@
 package com.ecomarket.ecomarket.controller;
 
+import com.ecomarket.ecomarket.assembler.ClienteAssembler;
+import com.ecomarket.ecomarket.assembler.ClienteAssembler.ClienteModel;
 import com.ecomarket.ecomarket.model.Cliente;
 import com.ecomarket.ecomarket.service.ClienteService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,39 +19,46 @@ public class ClienteController {
     @Autowired
     private ClienteService clienteService;
 
-    // Obtener todos los clientes
+    @Autowired
+    private ClienteAssembler clienteAssembler;
+
+    // Obtener todos los clientes (devuelve lista de ClienteModel)
     @GetMapping
-    public List<Cliente> getAllClientes() {
-        return clienteService.findAll();
+    public List<ClienteModel> getAllClientes() {
+        List<Cliente> clientes = clienteService.findAll();
+        return clienteAssembler.toModelList(clientes);
     }
 
-    // Obtener un cliente por ID
+    // Obtener un cliente por ID (devuelve ClienteModel)
     @GetMapping("/{id}")
-    public ResponseEntity<Cliente> getClienteById(@PathVariable Integer id) {
+    public ResponseEntity<ClienteModel> getClienteById(@PathVariable Integer id) {
         return clienteService.findById(id)
+                .map(clienteAssembler::toModel)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Crear un nuevo cliente
+    // Crear un nuevo cliente (devuelve ClienteModel)
     @PostMapping
-    public ResponseEntity<Cliente> createCliente(@RequestBody Cliente cliente) {
+    public ResponseEntity<ClienteModel> createCliente(@RequestBody Cliente cliente) {
         Cliente nuevoCliente = clienteService.save(cliente);
-        return ResponseEntity.status(HttpStatus.CREATED).body(nuevoCliente);
+        ClienteModel model = clienteAssembler.toModel(nuevoCliente);
+        return ResponseEntity.status(HttpStatus.CREATED).body(model);
     }
 
-    // Actualizar un cliente existente
+    // Actualizar un cliente existente (devuelve ClienteModel)
     @PutMapping("/{id}")
-    public ResponseEntity<Cliente> updateCliente(@PathVariable Integer id, @RequestBody Cliente clienteActualizado) {
+    public ResponseEntity<ClienteModel> updateCliente(@PathVariable Integer id, @RequestBody Cliente clienteActualizado) {
         try {
             Cliente cliente = clienteService.update(id, clienteActualizado);
-            return ResponseEntity.ok(cliente);
+            ClienteModel model = clienteAssembler.toModel(cliente);
+            return ResponseEntity.ok(model);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
     }
 
-    // Eliminar un cliente
+    // Eliminar un cliente (sin cuerpo)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCliente(@PathVariable Integer id) {
         clienteService.deleteById(id);

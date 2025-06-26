@@ -1,61 +1,67 @@
 package com.ecomarket.ecomarket.controller;
 
+import com.ecomarket.ecomarket.assembler.ProductoAssembler;
 import com.ecomarket.ecomarket.model.Producto;
+import com.ecomarket.ecomarket.assembler.ProductoAssembler.ProductoModel;
 import com.ecomarket.ecomarket.service.ProductoService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/productos") //quedaria como "localhost:8080/api/productos"
+@RequestMapping("/api/productos")
 public class ProductoController {
 
     @Autowired
     private ProductoService productoService;
 
-    // Obtener todos los productos
+    @Autowired
+    private ProductoAssembler productoAssembler;
+
+    // Obtener todos los productos con HATEOAS
     @GetMapping
-    public List<Producto> getAllProductos() {
-        return productoService.findAll();
+    public List<ProductoModel> getAllProductos() {
+        List<Producto> productos = productoService.findAll();
+        return productos.stream()
+                .map(productoAssembler::toModel)
+                .collect(Collectors.toList());
     }
 
-    // Obtener un producto por ID
-    @GetMapping("/{id}") //quedaria como "localhost:8080/api/productos/1" donde uno es el id
-    public ResponseEntity<Producto> getProductoById(@PathVariable Integer id) {
+    // Obtener un producto por ID con HATEOAS
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductoModel> getProductoById(@PathVariable Integer id) {
         return productoService.findById(id)
+                .map(productoAssembler::toModel)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Crear un nuevo producto
+    // Crear un nuevo producto (devuelve modelo HATEOAS)
     @PostMapping
-    public ResponseEntity<Producto> createProducto(@RequestBody Producto producto) {
+    public ResponseEntity<ProductoModel> createProducto(@RequestBody Producto producto) {
         Producto nuevoProducto = productoService.save(producto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(nuevoProducto);
+        ProductoModel model = productoAssembler.toModel(nuevoProducto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(model);
     }
 
-    // Actualizar un producto existente
+    // Actualizar un producto existente (devuelve modelo HATEOAS)
     @PutMapping("/{id}")
-    public ResponseEntity<Producto> updateProducto(@PathVariable Integer id, @RequestBody Producto productoActualizado) {
+    public ResponseEntity<ProductoModel> updateProducto(@PathVariable Integer id, @RequestBody Producto productoActualizado) {
         try {
             Producto producto = productoService.update(id, productoActualizado);
-            return ResponseEntity.ok(producto);
+            ProductoModel model = productoAssembler.toModel(producto);
+            return ResponseEntity.ok(model);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
     }
 
-    // Eliminar un producto
+    // Eliminar un producto (sin cuerpo)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProducto(@PathVariable Integer id) {
         productoService.deleteById(id);
