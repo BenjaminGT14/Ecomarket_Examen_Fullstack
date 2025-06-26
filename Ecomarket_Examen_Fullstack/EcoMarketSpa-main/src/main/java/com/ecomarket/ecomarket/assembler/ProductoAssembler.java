@@ -1,16 +1,22 @@
 package com.ecomarket.ecomarket.assembler;
 
+import com.ecomarket.ecomarket.controller.ProductoController;
 import com.ecomarket.ecomarket.model.Producto;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class ProductoAssembler {
+public class ProductoAssembler implements RepresentationModelAssembler<Producto, ProductoAssembler.ProductoModel> {
 
-    public ProductoModel toModel(@NonNull Producto producto) {
+    @Override
+    public @NonNull ProductoModel toModel(@NonNull Producto producto) {
         ProductoModel model = new ProductoModel();
 
         model.setId(producto.getId());
@@ -21,6 +27,12 @@ public class ProductoAssembler {
         model.setCategoria(producto.getCategoria());
         model.setPrecio(producto.getPrecio());
         model.setStock(producto.getStock());
+
+        // Agregar enlaces HATEOAS
+        model.add(linkTo(methodOn(ProductoController.class).getProductoById(producto.getId())).withSelfRel());
+        model.add(linkTo(methodOn(ProductoController.class).getAllProductos()).withRel("productos"));
+        model.add(linkTo(methodOn(ProductoController.class).updateProducto(producto.getId(), null)).withRel("actualizar"));
+        model.add(linkTo(methodOn(ProductoController.class).deleteProducto(producto.getId())).withRel("eliminar"));
 
         return model;
     }
@@ -33,7 +45,7 @@ public class ProductoAssembler {
         return list;
     }
 
-    public static class ProductoModel {
+    public static class ProductoModel extends RepresentationModel<ProductoModel> {
         private Integer id;
         private String codigoBarra;
         private String nombre;

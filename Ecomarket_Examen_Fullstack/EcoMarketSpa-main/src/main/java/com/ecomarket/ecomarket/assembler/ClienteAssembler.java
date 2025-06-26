@@ -1,16 +1,20 @@
 package com.ecomarket.ecomarket.assembler;
 
+import com.ecomarket.ecomarket.controller.ClienteController;
 import com.ecomarket.ecomarket.model.Cliente;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @Component
 public class ClienteAssembler {
 
-    // Convierte Cliente a ClienteModel (DTO simple)
-    public ClienteModel toModel(Cliente cliente) {
+    // Convierte Cliente a EntityModel<ClienteModel> con enlaces HATEOAS
+    public EntityModel<ClienteModel> toModel(Cliente cliente) {
         ClienteModel model = new ClienteModel();
         model.setId(cliente.getId());
         model.setNombre_apellido(cliente.getNombre_apellido());
@@ -19,16 +23,20 @@ public class ClienteAssembler {
         model.setDireccion(cliente.getDireccion());
         model.setContraseña(cliente.getContraseña());
         model.setFechaRegistro(cliente.getFechaRegistro());
-        return model;
+
+        return EntityModel.of(model,
+                linkTo(methodOn(ClienteController.class).getClienteById(cliente.getId())).withSelfRel(),
+                linkTo(methodOn(ClienteController.class).getAllClientes()).withRel("clientes"),
+                linkTo(methodOn(ClienteController.class).updateCliente(cliente.getId(), cliente)).withRel("actualizar"),
+                linkTo(methodOn(ClienteController.class).deleteCliente(cliente.getId())).withRel("eliminar")
+        );
     }
 
-    // Convierte lista de Clientes a lista de ClienteModels
-    public List<ClienteModel> toModelList(List<Cliente> clientes) {
-        List<ClienteModel> listaModel = new ArrayList<>();
-        for (Cliente c : clientes) {
-            listaModel.add(toModel(c));
-        }
-        return listaModel;
+    // Convierte lista de Clientes a lista de EntityModel<ClienteModel> con enlaces
+    public List<EntityModel<ClienteModel>> toModelList(List<Cliente> clientes) {
+        return clientes.stream()
+                .map(this::toModel)
+                .collect(Collectors.toList());
     }
 
     // DTO simple sin heredar nada

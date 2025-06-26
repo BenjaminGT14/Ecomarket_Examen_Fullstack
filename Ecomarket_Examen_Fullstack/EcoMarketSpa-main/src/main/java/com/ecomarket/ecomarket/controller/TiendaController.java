@@ -22,12 +22,14 @@ public class TiendaController {
     @Autowired
     private TiendaAssembler tiendaAssembler;
 
+    // Obtener todas las tiendas con enlaces
     @GetMapping
     public List<TiendaModel> getAllTiendas() {
         List<Tienda> tiendas = tiendaService.findAll();
         return tiendaAssembler.toModelList(tiendas);
     }
 
+    // Obtener una tienda por id con enlace
     @GetMapping("/{id}")
     public ResponseEntity<TiendaModel> getTiendaById(@PathVariable Integer id) {
         return tiendaService.findById(id)
@@ -36,6 +38,7 @@ public class TiendaController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // Crear una tienda nueva y devolver modelo con enlace
     @PostMapping
     public ResponseEntity<TiendaModel> createTienda(@RequestBody Tienda tienda) {
         Tienda nueva = tiendaService.save(tienda);
@@ -43,6 +46,7 @@ public class TiendaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(model);
     }
 
+    // Actualizar tienda existente y devolver modelo con enlace
     @PutMapping("/{id}")
     public ResponseEntity<TiendaModel> updateTienda(@PathVariable Integer id, @RequestBody Tienda tienda) {
         try {
@@ -54,6 +58,7 @@ public class TiendaController {
         }
     }
 
+    // Eliminar tienda por id (sin cuerpo)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTienda(@PathVariable Integer id) {
         tiendaService.deleteById(id);

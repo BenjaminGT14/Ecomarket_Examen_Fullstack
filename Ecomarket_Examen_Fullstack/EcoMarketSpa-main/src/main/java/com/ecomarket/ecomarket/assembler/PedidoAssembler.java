@@ -1,16 +1,23 @@
 package com.ecomarket.ecomarket.assembler;
 
+import com.ecomarket.ecomarket.controller.PedidoController;
 import com.ecomarket.ecomarket.model.Pedido;
+
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @Component
-public class PedidoAssembler {
+public class PedidoAssembler implements RepresentationModelAssembler<Pedido, PedidoAssembler.PedidoModel> {
 
-    public PedidoModel toModel(@NonNull Pedido pedido) {
+    @Override
+    public @NonNull PedidoModel toModel(@NonNull Pedido pedido) {
         PedidoModel model = new PedidoModel();
 
         model.setId(pedido.getId());
@@ -19,6 +26,12 @@ public class PedidoAssembler {
         model.setTotal(pedido.getTotal());
         model.setEstado(pedido.getEstado());
         model.setFechaPedido(pedido.getFechaPedido());
+
+        // Agregar enlaces HATEOAS
+        model.add(linkTo(methodOn(PedidoController.class).getPedidoById(pedido.getId())).withSelfRel());
+        model.add(linkTo(methodOn(PedidoController.class).getAllPedidos()).withRel("pedidos"));
+        model.add(linkTo(methodOn(PedidoController.class).updatePedido(pedido.getId(), pedido)).withRel("actualizar"));
+        model.add(linkTo(methodOn(PedidoController.class).deletePedido(pedido.getId())).withRel("eliminar"));
 
         return model;
     }
@@ -31,7 +44,7 @@ public class PedidoAssembler {
         return list;
     }
 
-    public static class PedidoModel {
+    public static class PedidoModel extends RepresentationModel<PedidoModel> {
         private Integer id;
         private Integer idCliente;
         private Integer idTienda;
