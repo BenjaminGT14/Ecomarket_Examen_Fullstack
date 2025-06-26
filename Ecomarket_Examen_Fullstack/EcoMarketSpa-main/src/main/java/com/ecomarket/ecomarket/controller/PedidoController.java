@@ -22,12 +22,14 @@ public class PedidoController {
     @Autowired
     private PedidoAssembler pedidoAssembler;
 
+    // GET todos los pedidos
     @GetMapping
     public List<PedidoModel> getAllPedidos() {
         List<Pedido> pedidos = pedidoService.findAll();
         return pedidoAssembler.toModelList(pedidos);
     }
 
+    // GET un pedido por ID
     @GetMapping("/{id}")
     public ResponseEntity<PedidoModel> getPedidoById(@PathVariable Integer id) {
         return pedidoService.findById(id)
@@ -36,6 +38,7 @@ public class PedidoController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // POST crear un nuevo pedido
     @PostMapping
     public ResponseEntity<PedidoModel> createPedido(@RequestBody Pedido pedido) {
         Pedido nuevoPedido = pedidoService.save(pedido);
@@ -43,6 +46,7 @@ public class PedidoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(model);
     }
 
+    // PUT actualizar pedido
     @PutMapping("/{id}")
     public ResponseEntity<PedidoModel> updatePedido(@PathVariable Integer id, @RequestBody Pedido pedidoActualizado) {
         try {
@@ -54,6 +58,7 @@ public class PedidoController {
         }
     }
 
+    // DELETE eliminar pedido
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePedido(@PathVariable Integer id) {
         pedidoService.deleteById(id);
